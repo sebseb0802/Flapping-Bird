@@ -43,13 +43,28 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
 
+        self.frame1 = pygame.image.load("Assets/Sprites/Player/Player1.png")
+        self.frame2 = pygame.image.load("Assets/Sprites/Player/Player2.png")
+        self.frame3 = pygame.image.load("Assets/Sprites/Player/Player3.png")
+        self.frame4 = pygame.image.load("Assets/Sprites/Player/Player4.png")
+
+        self.frames = [
+            self.frame1, 
+            self.frame2, 
+            self.frame3, 
+            self.frame4
+        ]
+
         self.image = pygame.image.load("Assets/Sprites/Player/Player1.png")
+
         self.rect = self.image.get_rect()
         self.rect.topleft = (100, 100)
+
         self.position = pygame.Vector2(48, 100)
         self.velocityY = 0
         self.gameOver = False
         self.gravity = 0.1
+        self.frame = 0
 
     def updatePosition(self):
         # Continually adds gravity to velocity so that the velocity of the player continually grows as the player falls
@@ -65,8 +80,28 @@ class Player(pygame.sprite.Sprite):
             self.gameOver = True
             print("Collision detected!")
 
+    def drawSelf(self):
+        window.blit(self.frames[self.frame], self.position)
+
+    def animate(self):
+        if self.gameOver == False:
+            if self.frame == 3:
+                self.frame = 0
+            self.rect = self.frames[self.frame].get_rect()
+            self.rect.topleft = (100, 100)
+
+            self.drawSelf()
+            self.frame += 1
+
+
 # Creates an instance of the player class
 player = Player()
+
+# Counts the number of frames
+frameCounter = 0
+
+# Specifies how often the player should animate
+animationFrequency = 15
 
 while running:
     for event in pygame.event.get():
@@ -89,11 +124,19 @@ while running:
                     # Floor tile is drawn again once the game resets to prevent some of the player sprite "remaining" drawn there since the last collision
                     window.blit(tiles[tilemap[0][2]], tileRect)
 
+    # Increments the frameCounter variable every frame
+    frameCounter += 1
+
     # Background image must be redrawn each frame in order to refresh the scene and stop "onion skin" trail effect when drawing player sprite
     window.blit(backgroundImage, (0, 0))
 
-    # Drawing player sprite
-    window.blit(player.image, player.position)
+    if frameCounter >= animationFrequency and player.gameOver == False:
+        # If the required number of frames has passed, allow the player to animate (as long as it isn't game over)
+        player.animate()
+        frameCounter = 0
+    else:
+        # Else, draw the current sprite of the player
+        player.drawSelf()
     
 
     # Updating player position (+ velocity) and checking player collisions
