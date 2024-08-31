@@ -1,1 +1,1 @@
-    
+highScoreTextRect
